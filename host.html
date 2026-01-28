@@ -70,55 +70,7 @@
             color: #FFD700;
         }
 
-        /* Question Grid */
-        .question-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .question-cell {
-            aspect-ratio: 1;
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            border: 3px solid #FFD700;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #da251d;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .question-cell:hover:not(.answered) {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
-        }
-
-        .question-cell.answered {
-            cursor: not-allowed;
-        }
-
-        .question-cell.team-a {
-            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
-            border-color: #ff0000;
-            color: #fff;
-        }
-
-        .question-cell.team-b {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            border-color: #FFD700;
-            color: #da251d;
-        }
-
-        .question-cell.dead {
-            background: rgba(100, 100, 100, 0.5);
-            border-color: #666;
-            color: #999;
-        }
+        /* Grid removed - Host only sees approval notifications */
 
         /* Score Controls */
         .score-controls {
@@ -787,23 +739,7 @@
             }
         });
 
-        function updateHostGrid(cells) {
-            const cellElements = document.querySelectorAll('.question-cell');
-            cellElements.forEach(cell => {
-                const cellNum = parseInt(cell.dataset.question);
-                const cellData = cells[cellNum];
-                
-                cell.classList.remove('team-a', 'team-b', 'dead', 'answered');
-                
-                if (cellData.owner === 'A') {
-                    cell.classList.add('team-a', 'answered');
-                } else if (cellData.owner === 'B') {
-                    cell.classList.add('team-b', 'answered');
-                } else if (cellData.owner === 'dead') {
-                    cell.classList.add('dead', 'answered');
-                }
-            });
-        }
+        // updateHostGrid removed - Host doesn't display grid anymore
 
         function showApprovalNotification(selection) {
             const notification = document.getElementById('approvalNotification');
