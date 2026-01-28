@@ -1049,6 +1049,10 @@
                     scores: {
                         A: 0,
                         B: 0
+                    },
+                    completedBingos: {
+                        A: [],
+                        B: []
                     }
                 });
             }
@@ -1336,6 +1340,10 @@
                     scores: {
                         A: 0,
                         B: 0
+                    },
+                    completedBingos: {
+                        A: [],
+                        B: []
                     }
                 });
                 
@@ -1505,6 +1513,8 @@
         // Check Bingo
         async function checkBingo(team) {
             const cellsRef = ref(database, 'cells');
+            const gameStateRef = ref(database, 'gameState');
+            
             const snapshot = await get(cellsRef);
             const cells = snapshot.val();
             
@@ -1514,51 +1524,70 @@
                 [cells[7].owner, cells[8].owner, cells[9].owner]
             ];
             
-            let hasBingo = false;
+            // Get existing bingos to avoid double-counting
+            const gameStateSnapshot = await get(gameStateRef);
+            const gameState = gameStateSnapshot.val();
+            const completedBingos = gameState.completedBingos || {};
+            const teamBingos = completedBingos[team] || [];
+            
+            let newBingos = [];
             
             // Check rows
             for (let i = 0; i < 3; i++) {
                 if (grid[i][0] === team && grid[i][1] === team && grid[i][2] === team) {
-                    hasBingo = true;
+                    const bingoId = `row${i}`;
+                    if (!teamBingos.includes(bingoId)) {
+                        newBingos.push(bingoId);
+                    }
                 }
             }
             
             // Check columns
             for (let i = 0; i < 3; i++) {
                 if (grid[0][i] === team && grid[1][i] === team && grid[2][i] === team) {
-                    hasBingo = true;
+                    const bingoId = `col${i}`;
+                    if (!teamBingos.includes(bingoId)) {
+                        newBingos.push(bingoId);
+                    }
                 }
             }
             
             // Check diagonals
             if (grid[0][0] === team && grid[1][1] === team && grid[2][2] === team) {
-                hasBingo = true;
+                const bingoId = 'diag1';
+                if (!teamBingos.includes(bingoId)) {
+                    newBingos.push(bingoId);
+                }
             }
             if (grid[0][2] === team && grid[1][1] === team && grid[2][0] === team) {
-                hasBingo = true;
+                const bingoId = 'diag2';
+                if (!teamBingos.includes(bingoId)) {
+                    newBingos.push(bingoId);
+                }
             }
             
-            if (hasBingo) {
-                // Add 50 bonus points
-                const gameStateRef = ref(database, 'gameState');
-                const gameStateSnapshot = await get(gameStateRef);
-                const gameState = gameStateSnapshot.val();
-                const newScore = gameState.scores[team] + 50;
+            // Award points for each new bingo
+            if (newBingos.length > 0) {
+                const newScore = gameState.scores[team] + (newBingos.length * 50);
+                const updatedTeamBingos = [...teamBingos, ...newBingos];
                 
                 await update(gameStateRef, {
-                    [`scores/${team}`]: newScore
+                    [`scores/${team}`]: newScore,
+                    [`completedBingos/${team}`]: updatedTeamBingos
                 });
                 
                 // Show bingo alert
-                showBingoAlert(team);
+                showBingoAlert(team, newBingos.length);
             }
         }
 
         // Show Bingo Alert
-        function showBingoAlert(team) {
+        function showBingoAlert(team, count = 1) {
             const alert = document.getElementById('bingoAlert');
             const teamText = document.getElementById('bingoTeam');
+            const pointsText = count === 1 ? '+50 ĐIỂM THƯỞNG!' : `+${count * 50} ĐIỂM THƯỞNG! (${count} Bingo)`;
             teamText.textContent = `TEAM ${team} HOÀN THÀNH 3 Ô LIÊN TIẾP!`;
+            document.querySelector('#bingoAlert p').textContent = pointsText;
             alert.classList.add('show');
             
             setTimeout(() => {
