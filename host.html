@@ -821,10 +821,19 @@
             const snapshot = await get(cellSelectionRef);
             const selection = snapshot.val();
             
-            if (selection) {
-                await update(cellSelectionRef, { status: 'approved' });
-                showQuestionToHost(selection.cellNumber, selection.answeringTeam);
+            if (!selection || !selection.cellNumber) {
+                alert('Không có yêu cầu nào để phê duyệt!');
+                return;
             }
+            
+            // Hide notification first
+            hideApprovalNotification();
+            
+            // Update status to approved
+            await update(cellSelectionRef, { status: 'approved' });
+            
+            // Show question to host
+            showQuestionToHost(selection.cellNumber, selection.answeringTeam);
         };
 
         window.rejectSelection = async function() {
