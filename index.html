@@ -911,6 +911,44 @@
         </div>
     </div>
 
+    <!-- Question Modal (Host Only) -->
+    <div id="questionModal" class="question-modal">
+        <div class="question-content">
+            <div class="question-header" id="questionHeader"></div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span id="timerDisplay" style="font-size: 2rem; color: #FFD700;">⏱️ 30s</span>
+            </div>
+            <div class="question-text" id="questionText"></div>
+            <div class="answer-options" id="answerOptions"></div>
+            <div class="question-actions">
+                <button class="control-btn" onclick="markAnswer(true)" style="background: rgba(0, 255, 0, 0.3); border-color: #00ff00; color: #00ff00;">✓ ĐÚNG</button>
+                <button class="control-btn danger" onclick="markAnswer(false)">✗ SAI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Round 2 Modal -->
+    <div id="round2Modal" class="round2-modal">
+        <div class="round2-content">
+            <h1 style="text-align: center; color: #FFD700; margin-bottom: 30px;">🎯 VÒNG 2 - CÂU HỎI MỞ 🎯</h1>
+            <div class="round2-question">
+                <p style="margin-bottom: 20px; font-weight: bold;">Câu hỏi:</p>
+                <p>Hãy trình bày quan điểm của Hồ Chí Minh về giáo dục đào tạo con người mới trong xã hội chủ nghĩa?</p>
+            </div>
+            <div class="round2-actions">
+                <button class="award-team-btn award-team-a" onclick="awardRound2Points('A')">
+                    🔴 TEAM A ĐÚNG<br>+50 điểm
+                </button>
+                <button class="award-team-btn award-team-b" onclick="awardRound2Points('B')">
+                    🔵 TEAM B ĐÚNG<br>+50 điểm
+                </button>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="close-results-btn" onclick="closeRound2()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
@@ -1052,20 +1090,11 @@
                     alert('❌ Mật khẩu không đúng!');
                     return;
                 }
-            }
-            
-            currentRole = role;
-            document.getElementById('roleSelection').style.display = 'none';
-            
-            if (role === 'host') {
-                document.getElementById('hostScreen').classList.add('active');
-                initHostScreen();
+                window.location.href = 'host.html';
             } else if (role === 'teamA') {
-                document.getElementById('teamAScreen').classList.add('active');
-                initTeamScreen('A');
+                window.location.href = 'team.html?team=A';
             } else if (role === 'teamB') {
-                document.getElementById('teamBScreen').classList.add('active');
-                initTeamScreen('B');
+                window.location.href = 'team.html?team=B';
             }
         };
 
@@ -1553,13 +1582,13 @@
             const snapshot = await get(gameStateRef);
             const gameState = snapshot.val();
             
-            const newScore = gameState.scores[team] + 30;
+            const newScore = gameState.scores[team] + 50;
             
             await update(gameStateRef, {
                 [`scores/${team}`]: newScore
             });
             
-            alert(`✅ Team ${team} được cộng 30 điểm!`);
+            alert(`✅ Team ${team} được cộng 50 điểm!`);
             closeRound2();
         };
 
