@@ -1110,6 +1110,46 @@
             window.location.href = 'index_new.html';
         };
 
+        // Auto reset when host closes/reloads the page
+        window.addEventListener('beforeunload', async (e) => {
+            try {
+                // Reset all Firebase data
+                await set(gameStateRef, {
+                    currentRound: 1,
+                    scores: { A: 0, B: 0 }
+                });
+                
+                const initialCells = {};
+                for (let i = 1; i <= 9; i++) {
+                    initialCells[i] = { owner: null, answered: false };
+                }
+                await set(cellsRef, initialCells);
+                
+                await set(cellSelectionRef, {
+                    teamRequesting: null,
+                    cellNumber: null,
+                    status: null,
+                    currentQuestion: null,
+                    answeringTeam: null
+                });
+                
+                await set(round2Ref, {
+                    active: false,
+                    timestamp: null
+                });
+                
+                await set(bingoRef, {
+                    active: false,
+                    winner: null,
+                    timestamp: null
+                });
+                
+                console.log('Auto reset completed');
+            } catch (error) {
+                console.error('Auto reset error:', error);
+            }
+        });
+
         initializeDatabase();
     </script>
 </body>
