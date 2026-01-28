@@ -1107,7 +1107,12 @@
         };
 
         window.backToMain = function() {
-            window.location.href = 'index_new.html';
+            const path = window.location.pathname;
+            if (path.includes('/game-tu-tuong-hcm/')) {
+                window.location.href = '/game-tu-tuong-hcm/index_new.html';
+            } else {
+                window.location.href = '/index_new.html';
+            }
         };
 
         // Auto reset when host closes/reloads the page
