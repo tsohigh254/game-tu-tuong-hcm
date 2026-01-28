@@ -99,29 +99,18 @@
 
     <script>
         const HOST_PASSWORD = 'T@ohan123';
-        
-        // Get base URL for GitHub Pages
-        const getBaseUrl = () => {
-            const path = window.location.pathname;
-            // If on GitHub Pages (contains repo name)
-            if (path.includes('/game-tu-tuong-hcm/')) {
-                return '/game-tu-tuong-hcm/';
-            }
-            // Local or root deployment
-            return '/';
-        };
 
         function selectHost() {
             const password = prompt('Nhập mật khẩu HOST:');
             if (password === HOST_PASSWORD) {
-                window.location.href = getBaseUrl() + 'host.html';
+                window.location.href = './host.html';
             } else {
                 alert('❌ Mật khẩu không đúng!');
             }
         }
 
         function selectTeam(team) {
-            window.location.href = getBaseUrl() + `team.html?team=${team}`;
+            window.location.href = `./team.html?team=${team}`;
         }
     </script>
 </body>
