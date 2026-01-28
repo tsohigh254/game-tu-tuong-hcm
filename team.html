@@ -533,16 +533,17 @@
             const selection = snapshot.val();
             const status = document.getElementById('status');
             
-            if (selection && selection.teamRequesting === `Team ${team}`) {
+            // Check if this team is answering and status is approved
+            if (selection && selection.status === 'approved' && selection.answeringTeam === `Team ${team}`) {
+                // Show question only if this team is the one who will answer
+                status.textContent = `✅ Đã được duyệt! Đang hiển thị câu hỏi...`;
+                status.style.color = '#00ff00';
+                showQuestionModal(selection.cellNumber);
+            } else if (selection && selection.teamRequesting === `Team ${team}`) {
                 if (selection.status === 'pending') {
                     status.textContent = `⏳ Đang chờ Host phê duyệt ô ${selection.cellNumber}...`;
                     status.style.color = '#FFD700';
                     closeQuestionModal();
-                } else if (selection.status === 'approved' && selection.answeringTeam === `Team ${team}`) {
-                    // Show question only if this team is the one who will answer
-                    status.textContent = `✅ Đã được duyệt! Đang hiển thị câu hỏi...`;
-                    status.style.color = '#00ff00';
-                    showQuestionModal(selection.cellNumber);
                 } else if (selection.status === 'rejected') {
                     status.textContent = `❌ Bị từ chối. Chọn ô khác!`;
                     status.style.color = '#ff6666';
@@ -558,11 +559,6 @@
                     status.style.color = '#ff6666';
                     closeQuestionModal();
                 }
-            } else if (selection && selection.answeringTeam === `Team ${team}` && selection.status === 'approved') {
-                // This team didn't request, but host gave them the question
-                status.textContent = `✅ Host cho bạn trả lời! Đang hiển thị câu hỏi...`;
-                status.style.color = '#00ff00';
-                showQuestionModal(selection.cellNumber);
             } else if (selection && selection.teamRequesting && selection.teamRequesting !== `Team ${team}`) {
                 status.textContent = `${selection.teamRequesting} đang chọn ô...`;
                 status.style.color = '#ff6666';
