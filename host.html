@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOST - Game Show</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #da251d 0%, #c41e1a 100%);
+            color: #FFD700;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            color: #FFD700;
+        }
+
+        .star {
+            color: #FFD700;
+            font-size: 2rem;
+            margin: 0 10px;
+        }
+
+        /* Scoreboard */
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .team-score {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #FFD700;
+        }
+
+        .team-score h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        /* Question Grid */
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .question-cell {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #da251d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .question-cell:hover:not(.answered) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .question-cell.answered {
+            cursor: not-allowed;
+        }
+
+        .question-cell.team-a {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            border-color: #ff0000;
+            color: #fff;
+        }
+
+        .question-cell.team-b {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-color: #FFD700;
+            color: #da251d;
+        }
+
+        .question-cell.dead {
+            background: rgba(100, 100, 100, 0.5);
+            border-color: #666;
+            color: #999;
+        }
+
+        /* Score Controls */
+        .score-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .score-btn {
+            padding: 8px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .score-btn:hover {
+            background: rgba(255, 215, 0, 0.4);
+        }
+
+        /* Host Controls */
+        .host-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 215, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .control-btn.danger {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff6666;
+            color: #ff6666;
+        }
+
+        .control-btn.danger:hover {
+            background: rgba(255, 0, 0, 0.5);
+        }
+
+        /* Approval Notification */
+        .approval-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 3000;
+            min-width: 300px;
+            display: none;
+        }
+
+        .approval-notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .approval-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .approve-btn, .reject-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .approve-btn {
+            background: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            border: 2px solid #00ff00;
+        }
+
+        .reject-btn {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff6666;
+            border: 2px solid #ff6666;
+        }
+
+        /* Question Modal */
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .question-modal.show {
+            display: flex;
+        }
+
+        .question-content {
+            background: linear-gradient(135deg, #da251d 0%, #c41e1a 100%);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .question-header {
+            font-size: 1.8rem;
+            color: #FFD700;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            color: #FFD700;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .timer-display.warning {
+            color: #ff6666;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            color: #FFD700;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .answer-btn {
+            padding: 20px;
+            font-size: 1.2rem;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .answer-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .correct-btn, .wrong-btn {
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .correct-btn {
+            background: rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            border: 3px solid #00ff00;
+        }
+
+        .wrong-btn {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff6666;
+            border: 3px solid #ff6666;
+        }
+
+        /* Round 2 Modal */
+        .round2-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .round2-modal.show {
+            display: flex;
+        }
+
+        .round2-content {
+            background: linear-gradient(135deg, #da251d 0%, #c41e1a 100%);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .round2-question {
+            font-size: 1.6rem;
+            color: #FFD700;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .round2-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .award-team-btn {
+            flex: 1;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .award-team-a {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            border: 3px solid #ff0000;
+            color: #fff;
+        }
+
+        .award-team-b {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 3px solid #FFD700;
+            color: #da251d;
+        }
+
+        .award-team-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Final Results */
+        .final-results {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .final-results.show {
+            display: flex;
+        }
+
+        .results-content {
+            background: linear-gradient(135deg, #da251d 0%, #c41e1a 100%);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .results-title {
+            font-size: 3rem;
+            color: #FFD700;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        .results-scores {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .result-team {
+            flex: 1;
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #FFD700;
+        }
+
+        .result-team.winner {
+            background: rgba(255, 215, 0, 0.3);
+            border-width: 5px;
+            transform: scale(1.1);
+        }
+
+        .result-team-name {
+            font-size: 2rem;
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
+
+        .result-team-score {
+            font-size: 4rem;
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .winner-badge {
+            font-size: 3rem;
+            margin-top: 20px;
+        }
+
+        .close-results-btn {
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .close-results-btn:hover {
+            background: rgba(255, 215, 0, 0.4);
+        }
+
+        /* Bingo Alert */
+        .bingo-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            padding: 50px;
+            z-index: 4000;
+            display: none;
+            text-align: center;
+        }
+
+        .bingo-alert.show {
+            display: block;
+            animation: bounceIn 0.5s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span class="star">★</span>
+            HOST CONTROL PANEL
+            <span class="star">★</span>
+        </h1>
+        
+        <div class="scoreboard">
+            <div class="team-score">
+                <h2>🔴 TEAM A</h2>
+                <div class="score" id="scoreA">0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore('A', 10)">+10</button>
+                    <button class="score-btn" onclick="adjustScore('A', -10)">-10</button>
+                </div>
+            </div>
+            <div class="team-score">
+                <h2>🔵 TEAM B</h2>
+                <div class="score" id="scoreB">0</div>
+                <div class="score-controls">
+                    <button class="score-btn" onclick="adjustScore('B', 10)">+10</button>
+                    <button class="score-btn" onclick="adjustScore('B', -10)">-10</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="host-controls">
+            <button class="control-btn" onclick="showRound2()">🎯 VÒNG 2 - Câu hỏi mở</button>
+            <button class="control-btn" onclick="showFinalResults()">🏆 Kết quả chung cuộc</button>
+            <button class="control-btn danger" onclick="resetGame()">🔄 Reset Game</button>
+            <button class="control-btn" onclick="backToMain()">🏠 Quay lại màn hình chính</button>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="questionModal" class="question-modal">
+        <div class="question-content">
+            <div class="question-header" id="questionHeader">Câu hỏi #1</div>
+            <div class="timer-display" id="timerDisplay"></div>
+            <div class="question-text" id="questionText"></div>
+            <div class="answer-options" id="answerOptions"></div>
+            <div class="answer-actions">
+                <button class="correct-btn" onclick="markAnswer(true)">✓ ĐÚNG</button>
+                <button class="wrong-btn" onclick="markAnswer(false)">✗ SAI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Round 2 Modal -->
+    <div id="round2Modal" class="round2-modal">
+        <div class="round2-content">
+            <h1 style="text-align: center; color: #FFD700; margin-bottom: 30px;">
+                ⭐ VÒNG 2 - CÂU HỎI MỞ ⭐
+            </h1>
+            <div class="round2-question">
+                <p style="margin-bottom: 20px;">
+                    <strong>Câu hỏi:</strong> Hồ Chí Minh từng khẳng định: <em>"Văn hóa ở trong chính trị và kinh tế"</em>. 
+                    Tuy nhiên, Người cũng quan niệm: <em>"Muốn tiến lên chủ nghĩa xã hội thì phải phát triển kinh tế và văn hóa. 
+                    Tục ngữ ta có câu: Có thực mới vực được đạo, vì thế kinh tế phải đi trước".</em>
+                </p>
+                <p style="margin-bottom: 20px;">
+                    Hãy phân tích <strong>mối quan hệ biện chứng giữa Văn hóa với Kinh tế và Chính trị</strong> theo tư tưởng Hồ Chí Minh.
+                </p>
+                <p>
+                    Tại sao Người cho rằng <strong>kinh tế, chính trị phải đi trước mở đường</strong>, nhưng văn hóa lại không được 
+                    <em>"đứng ngoài"</em> mà phải ở <em>"trong"</em> kinh tế và chính trị?
+                </p>
+            </div>
+            <h3 style="text-align: center; color: #FFD700; margin-top: 30px; margin-bottom: 20px;">
+                Đội nào trả lời tốt hơn?
+            </h3>
+            <div class="round2-actions">
+                <button class="award-team-btn award-team-a" onclick="awardRound2Points('A')">
+                    🔴 TEAM A +30 điểm
+                </button>
+                <button class="award-team-btn award-team-b" onclick="awardRound2Points('B')">
+                    🟡 TEAM B +30 điểm
+                </button>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="control-btn" onclick="closeRound2()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Notification -->
+    <div id="approvalNotification" class="approval-notification">
+        <h3 style="color: #FFD700; margin-bottom: 10px;" id="approvalText"></h3>
+        <div class="approval-actions">
+            <button class="approve-btn" onclick="approveSelection()">✓ PHÊ DUYỆT</button>
+            <button class="reject-btn" onclick="rejectSelection()">✗ TỪ CHỐI</button>
+        </div>
+    </div>
+
+    <!-- Final Results -->
+    <div id="finalResults" class="final-results">
+        <div class="results-content">
+            <div class="results-title">🏆 KẾT QUẢ CHUNG CUỘC 🏆</div>
+            <div class="results-scores">
+                <div class="result-team" id="resultTeamA">
+                    <div class="result-team-name">🔴 TEAM A</div>
+                    <div class="result-team-score" id="finalScoreA">0</div>
+                    <div class="winner-badge" id="winnerBadgeA"></div>
+                </div>
+                <div class="result-team" id="resultTeamB">
+                    <div class="result-team-name">🟡 TEAM B</div>
+                    <div class="result-team-score" id="finalScoreB">0</div>
+                    <div class="winner-badge" id="winnerBadgeB"></div>
+                </div>
+            </div>
+            <button class="close-results-btn" onclick="closeFinalResults()">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Bingo Alert -->
+    <div id="bingoAlert" class="bingo-alert">
+        <h1 style="color: #FFD700; font-size: 4rem; margin-bottom: 20px;">🎉 BINGO! 🎉</h1>
+        <h2 style="color: #FFD700; font-size: 2rem;" id="bingoTeam"></h2>
+        <p style="color: #FFD700; font-size: 1.5rem; margin-top: 20px;">+50 ĐIỂM THƯỞNG!</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getDatabase, ref, set, onValue, update, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVnhRlz7goa18Y0Uwb6E3yJuTEBvxWEgY",
+            authDomain: "tu-tuong-hcm-game.firebaseapp.com",
+            databaseURL: "https://tu-tuong-hcm-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tu-tuong-hcm-game",
+            storageBucket: "tu-tuong-hcm-game.firebasestorage.app",
+            messagingSenderId: "637672671853",
+            appId: "1:637672671853:web:b6396983c7878376b1cd64",
+            measurementId: "G-WLRF1W52DH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const questions = [
+            {
+                id: 1,
+                question: "Vào tháng 8/1943, khi còn trong nhà tù của Tưởng Giới Thạch, Hồ Chí Minh đã đưa ra quan niệm về lĩnh vực nào sau đây?",
+                answers: ["A. Kinh tế", "B. Chính trị", "C. Văn hóa", "D. Ngoại giao"],
+                correct: "C"
+            },
+            {
+                id: 2,
+                question: "Theo Hồ Chí Minh, mối quan hệ giữa văn hóa với kinh tế và chính trị được xác định như thế nào?",
+                answers: ["A. Văn hóa nằm ngoài kinh tế và chính trị", "B. Văn hóa ở trong kinh tế và chính trị", "C. Văn hóa đứng trên kinh tế và chính trị", "D. Văn hóa không liên quan đến kinh tế"],
+                correct: "B"
+            },
+            {
+                id: 3,
+                question: 'Trong quan điểm của Hồ Chí Minh về vai trò của văn hóa, Người đã khẳng định: "Văn hóa nghệ thuật cũng là một..."?',
+                answers: ["A. Trò chơi giải trí", "B. Công cụ tuyên truyền", "C. Mặt trận", "D. Hình thức kinh doanh"],
+                correct: "C"
+            },
+            {
+                id: 4,
+                question: "Hồ Chí Minh ví đạo đức cách mạng như yếu tố nào của cây và sông?",
+                answers: ["A. Cành và nhánh", "B. Hoa và lá", "C. Gốc và nguồn", "D. Thân và dòng chảy"],
+                correct: "C"
+            },
+            {
+                id: 5,
+                question: "Trong các phẩm chất đạo đức cách mạng, phẩm chất nào được Hồ Chí Minh coi là quan trọng nhất, bao trùm nhất?",
+                answers: ["A. Cần, kiệm, liêm, chính", "B. Trung với nước, hiếu với dân", "C. Yêu thương con người", "D. Tinh thần quốc tế trong sáng"],
+                correct: "B"
+            },
+            {
+                id: 6,
+                question: 'Theo Hồ Chí Minh, chữ "Liêm" trong "Cần, kiệm, liêm, chính" có nghĩa là gì?',
+                answers: ["A. Siêng năng, chăm chỉ", "B. Tiết kiệm, không hoang phí", "C. Trong sạch, không tham lam", "D. Thẳng thắn, đứng đắn"],
+                correct: "C"
+            },
+            {
+                id: 7,
+                question: '"Một tấm gương sống còn có giá trị hơn một trăm bài diễn văn tuyên truyền" thể hiện nguyên tắc xây dựng đạo đức nào của Hồ Chí Minh?',
+                answers: ["A. Nói đi đôi với làm, nêu gương về đạo đức", "B. Xây đi đôi với chống", "C. Tu dưỡng đạo đức suốt đời", "D. Phê bình và tự phê bình"],
+                correct: "A"
+            },
+            {
+                id: 8,
+                question: 'Điền vào chỗ trống câu nói nổi tiếng của Bác: "Vì lợi ích mười năm thì phải trồng cây, vì lợi ích trăm năm thì phải ..."?',
+                answers: ["A. Trồng người", "B. Xây trường học", "C. Phát triển kinh tế", "D. Giữ nước"],
+                correct: "A"
+            },
+            {
+                id: 9,
+                question: "Hồ Chí Minh xác định con người vừa là mục tiêu, vừa là ... của cách mạng?",
+                answers: ["A. Công cụ", "B. Động lực", "C. Khách thể", "D. Kết quả"],
+                correct: "B"
+            }
+        ];
+
+        // Global Firebase references
+        const gameStateRef = ref(database, 'gameState');
+        const cellsRef = ref(database, 'cells');
+        const cellSelectionRef = ref(database, 'cellSelection');
+        const round2Ref = ref(database, 'round2Status');
+
+        // Initialize Database
+        async function initializeDatabase() {
+            const gameStateSnapshot = await get(gameStateRef);
+            if (!gameStateSnapshot.exists()) {
+                await set(gameStateRef, {
+                    currentRound: 1,
+                    scores: { A: 0, B: 0 }
+                });
+            }
+
+            const cellsSnapshot = await get(cellsRef);
+            if (!cellsSnapshot.exists()) {
+                const initialCells = {};
+                for (let i = 1; i <= 9; i++) {
+                    initialCells[i] = { owner: null, answered: false };
+                }
+                await set(cellsRef, initialCells);
+            }
+
+            const cellSelectionSnapshot = await get(cellSelectionRef);
+            if (!cellSelectionSnapshot.exists()) {
+                await set(cellSelectionRef, {
+                    teamRequesting: null,
+                    cellNumber: null,
+                    status: null,
+                    currentQuestion: null,
+                    answeringTeam: null
+                });
+            }
+
+            const round2Snapshot = await get(round2Ref);
+            if (!round2Snapshot.exists()) {
+                await set(round2Ref, {
+                    active: false,
+                    timestamp: null
+                });
+            }
+        }
+
+        // Listen to game state
+        onValue(gameStateRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('scoreA').textContent = data.scores.A;
+                document.getElementById('scoreB').textContent = data.scores.B;
+            }
+        });
+
+        // Listen to cell selection requests
+        onValue(cellSelectionRef, (snapshot) => {
+            const selection = snapshot.val();
+            if (selection && selection.status === 'pending') {
+                showApprovalNotification(selection);
+            } else {
+                hideApprovalNotification();
+            }
+        });
+
+        function updateHostGrid(cells) {
+            const cellElements = document.querySelectorAll('.question-cell');
+            cellElements.forEach(cell => {
+                const cellNum = parseInt(cell.dataset.question);
+                const cellData = cells[cellNum];
+                
+                cell.classList.remove('team-a', 'team-b', 'dead', 'answered');
+                
+                if (cellData.owner === 'A') {
+                    cell.classList.add('team-a', 'answered');
+                } else if (cellData.owner === 'B') {
+                    cell.classList.add('team-b', 'answered');
+                } else if (cellData.owner === 'dead') {
+                    cell.classList.add('dead', 'answered');
+                }
+            });
+        }
+
+        function showApprovalNotification(selection) {
+            const notification = document.getElementById('approvalNotification');
+            const text = document.getElementById('approvalText');
+            text.textContent = `${selection.teamRequesting} muốn chọn ô ${selection.cellNumber}`;
+            notification.classList.add('show');
+        }
+
+        function hideApprovalNotification() {
+            const notification = document.getElementById('approvalNotification');
+            notification.classList.remove('show');
+        }
+
+        window.approveSelection = async function() {
+            const snapshot = await get(cellSelectionRef);
+            const selection = snapshot.val();
+            
+            if (selection) {
+                await update(cellSelectionRef, { status: 'approved' });
+                showQuestionToHost(selection.cellNumber, selection.answeringTeam);
+            }
+        };
+
+        window.rejectSelection = async function() {
+            await update(cellSelectionRef, { status: 'rejected' });
+            
+            setTimeout(async () => {
+                await set(cellSelectionRef, {
+                    teamRequesting: null,
+                    cellNumber: null,
+                    status: null,
+                    currentQuestion: null,
+                    answeringTeam: null
+                });
+            }, 2000);
+        };
+
+        let questionTimer = null;
+        let timeLeft = 30;
+        
+        function showQuestionToHost(cellNumber, answeringTeam) {
+            const question = questions[cellNumber - 1];
+            if (!question) return;
+
+            document.getElementById('questionHeader').textContent = `Câu hỏi #${cellNumber} - ${answeringTeam}`;
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('answerOptions');
+            optionsContainer.innerHTML = '';
+            
+            question.answers.forEach(answer => {
+                const div = document.createElement('div');
+                div.className = 'answer-btn';
+                div.textContent = answer;
+                if (answer.startsWith(question.correct)) {
+                    div.style.borderColor = '#00ff00';
+                    div.style.color = '#00ff00';
+                }
+                optionsContainer.appendChild(div);
+            });
+            
+            timeLeft = 30;
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.textContent = `⏱️ ${timeLeft}s`;
+            timerDisplay.classList.remove('warning');
+            
+            if (questionTimer) clearInterval(questionTimer);
+            questionTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `⏱️ ${timeLeft}s`;
+                if (timeLeft <= 10) {
+                    timerDisplay.classList.add('warning');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(questionTimer);
+                }
+            }, 1000);
+            
+            document.getElementById('questionModal').classList.add('show');
+        }
+
+        window.markAnswer = async function(isCorrect) {
+            if (questionTimer) clearInterval(questionTimer);
+            
+            const selectionSnapshot = await get(cellSelectionRef);
+            const selection = selectionSnapshot.val();
+            
+            if (!selection) return;
+            
+            const cellNumber = selection.cellNumber;
+            const answeringTeam = selection.answeringTeam;
+            const teamLetter = answeringTeam === 'Team A' ? 'A' : 'B';
+            const otherTeam = teamLetter === 'A' ? 'B' : 'A';
+            
+            if (isCorrect) {
+                // Correct answer - award points and cell
+                await update(ref(database, `cells/${cellNumber}`), {
+                    owner: teamLetter,
+                    answered: true
+                });
+                
+                const gameStateSnapshot = await get(gameStateRef);
+                const gameState = gameStateSnapshot.val();
+                const newScore = gameState.scores[teamLetter] + 10;
+                
+                await update(gameStateRef, {
+                    [`scores/${teamLetter}`]: newScore
+                });
+                
+                setTimeout(() => checkBingo(teamLetter), 500);
+                
+                await set(cellSelectionRef, {
+                    teamRequesting: null,
+                    cellNumber: null,
+                    status: null,
+                    currentQuestion: null,
+                    answeringTeam: null
+                });
+                
+                document.getElementById('questionModal').classList.remove('show');
+            } else {
+                // Wrong answer - check if this is first or second attempt
+                const originalTeam = selection.teamRequesting;
+                
+                if (answeringTeam === originalTeam) {
+                    // First attempt failed - give other team a chance
+                    await update(cellSelectionRef, {
+                        answeringTeam: `Team ${otherTeam}`,
+                        firstAttemptFailed: true
+                    });
+                    
+                    document.getElementById('questionHeader').textContent = `Câu hỏi #${cellNumber} - Team ${otherTeam} (Cơ hội cướp ô!)`;
+                    
+                    // Reset timer for second team
+                    timeLeft = 30;
+                    const timerDisplay = document.getElementById('timerDisplay');
+                    timerDisplay.textContent = `⏱️ ${timeLeft}s`;
+                    timerDisplay.classList.remove('warning');
+                    
+                    if (questionTimer) clearInterval(questionTimer);
+                    questionTimer = setInterval(() => {
+                        timeLeft--;
+                        timerDisplay.textContent = `⏱️ ${timeLeft}s`;
+                        if (timeLeft <= 10) {
+                            timerDisplay.classList.add('warning');
+                        }
+                        if (timeLeft <= 0) {
+                            clearInterval(questionTimer);
+                        }
+                    }, 1000);
+                } else {
+                    // Second attempt also failed - mark cell as dead
+                    await update(ref(database, `cells/${cellNumber}`), {
+                        owner: 'dead',
+                        answered: true
+                    });
+                    
+                    await set(cellSelectionRef, {
+                        teamRequesting: null,
+                        cellNumber: null,
+                        status: null,
+                        currentQuestion: null,
+                        answeringTeam: null,
+                        firstAttemptFailed: false
+                    });
+                    
+                    document.getElementById('questionModal').classList.remove('show');
+                    alert('❌ Cả 2 team đều sai! Ô này bị loại.');
+                }
+            }
+        };
+
+        async function checkBingo(team) {
+            const snapshot = await get(cellsRef);
+            const cells = snapshot.val();
+            
+            const grid = [
+                [cells[1].owner, cells[2].owner, cells[3].owner],
+                [cells[4].owner, cells[5].owner, cells[6].owner],
+                [cells[7].owner, cells[8].owner, cells[9].owner]
+            ];
+            
+            let hasBingo = false;
+            
+            for (let i = 0; i < 3; i++) {
+                if (grid[i][0] === team && grid[i][1] === team && grid[i][2] === team) {
+                    hasBingo = true;
+                }
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                if (grid[0][i] === team && grid[1][i] === team && grid[2][i] === team) {
+                    hasBingo = true;
+                }
+            }
+            
+            if (grid[0][0] === team && grid[1][1] === team && grid[2][2] === team) {
+                hasBingo = true;
+            }
+            if (grid[0][2] === team && grid[1][1] === team && grid[2][0] === team) {
+                hasBingo = true;
+            }
+            
+            if (hasBingo) {
+                const gameStateSnapshot = await get(gameStateRef);
+                const gameState = gameStateSnapshot.val();
+                const newScore = gameState.scores[team] + 50;
+                
+                await update(gameStateRef, {
+                    [`scores/${team}`]: newScore
+                });
+                
+                showBingoAlert(team);
+            }
+        }
+
+        function showBingoAlert(team) {
+            const alert = document.getElementById('bingoAlert');
+            const teamText = document.getElementById('bingoTeam');
+            teamText.textContent = `TEAM ${team} HOÀN THÀNH 3 Ô LIÊN TIẾP!`;
+            alert.classList.add('show');
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+
+        window.adjustScore = async function(team, points) {
+            const snapshot = await get(gameStateRef);
+            const currentState = snapshot.val();
+            
+            const newScore = Math.max(0, currentState.scores[team] + points);
+            
+            await update(gameStateRef, {
+                [`scores/${team}`]: newScore
+            });
+        };
+
+        window.showRound2 = async function() {
+            document.getElementById('round2Modal').classList.add('show');
+            
+            // Notify all teams that Round 2 is active
+            await set(round2Ref, {
+                active: true,
+                timestamp: Date.now()
+            });
+        };
+
+        window.closeRound2 = async function() {
+            document.getElementById('round2Modal').classList.remove('show');
+            
+            // Notify all teams that Round 2 is closed
+            await set(round2Ref, {
+                active: false,
+                timestamp: Date.now()
+            });
+        };
+
+        window.awardRound2Points = async function(team) {
+            const snapshot = await get(gameStateRef);
+            const gameState = snapshot.val();
+            
+            const newScore = gameState.scores[team] + 50;
+            
+            await update(gameStateRef, {
+                [`scores/${team}`]: newScore
+            });
+            
+            alert(`✅ Team ${team} được cộng 50 điểm!`);
+            await closeRound2();
+        };
+
+        window.showFinalResults = async function() {
+            const snapshot = await get(gameStateRef);
+            const gameState = snapshot.val();
+            
+            const scoreA = gameState.scores.A;
+            const scoreB = gameState.scores.B;
+            
+            document.getElementById('finalScoreA').textContent = scoreA;
+            document.getElementById('finalScoreB').textContent = scoreB;
+            
+            const teamADiv = document.getElementById('resultTeamA');
+            const teamBDiv = document.getElementById('resultTeamB');
+            const badgeA = document.getElementById('winnerBadgeA');
+            const badgeB = document.getElementById('winnerBadgeB');
+            
+            teamADiv.classList.remove('winner');
+            teamBDiv.classList.remove('winner');
+            badgeA.textContent = '';
+            badgeB.textContent = '';
+            
+            if (scoreA > scoreB) {
+                teamADiv.classList.add('winner');
+                badgeA.textContent = '👑 CHIẾN THẮNG!';
+            } else if (scoreB > scoreA) {
+                teamBDiv.classList.add('winner');
+                badgeB.textContent = '👑 CHIẾN THẮNG!';
+            } else {
+                badgeA.textContent = '🤝 HÒA!';
+                badgeB.textContent = '🤝 HÒA!';
+            }
+            
+            document.getElementById('finalResults').classList.add('show');
+        };
+
+        window.closeFinalResults = function() {
+            document.getElementById('finalResults').classList.remove('show');
+        };
+
+        window.resetGame = async function() {
+            if (!confirm('Bạn có chắc chắn muốn reset toàn bộ trò chơi?')) return;
+            
+            try {
+                // Close all modals first
+                document.getElementById('questionModal').classList.remove('show');
+                document.getElementById('round2Modal').classList.remove('show');
+                document.getElementById('finalResults').classList.remove('show');
+                
+                // Clear timer if running
+                if (questionTimer) {
+                    clearInterval(questionTimer);
+                    questionTimer = null;
+                }
+                
+                // Reset all Firebase data
+                await set(gameStateRef, {
+                    currentRound: 1,
+                    scores: { A: 0, B: 0 }
+                });
+                
+                const initialCells = {};
+                for (let i = 1; i <= 9; i++) {
+                    initialCells[i] = { owner: null, answered: false };
+                }
+                await set(cellsRef, initialCells);
+                
+                await set(cellSelectionRef, {
+                    teamRequesting: null,
+                    cellNumber: null,
+                    status: null,
+                    currentQuestion: null,
+                    answeringTeam: null
+                });
+                
+                await set(round2Ref, {
+                    active: false,
+                    timestamp: null
+                });
+                
+                alert('✅ Đã reset game thành công!');
+            } catch (error) {
+                console.error('Reset error:', error);
+                alert('❌ Có lỗi khi reset game!');
+            }
+        };
+
+        window.backToMain = function() {
+            window.location.href = 'index_new.html';
+        };
+
+        initializeDatabase();
+    </script>
+</body>
+</html>

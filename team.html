@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team - Game Show</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #da251d 0%, #c41e1a 100%);
+            color: #FFD700;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            color: #FFD700;
+        }
+
+        .star {
+            color: #FFD700;
+            font-size: 2rem;
+            margin: 0 10px;
+        }
+
+        .scoreboard {
+            margin-bottom: 20px;
+        }
+
+        .team-score {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #FFD700;
+        }
+
+        .team-score h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #FFD700;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .question-cell {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #da251d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .question-cell:hover:not(.answered) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .question-cell.answered {
+            cursor: not-allowed;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-cell.answered::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%);
+            }
+        }
+
+        .question-cell.team-a {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            border: 4px solid #ff0000;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.6),
+                        inset 0 0 20px rgba(255, 100, 100, 0.3);
+            animation: glow-red 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-red {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.6),
+                           inset 0 0 20px rgba(255, 100, 100, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(255, 0, 0, 0.9),
+                           inset 0 0 30px rgba(255, 100, 100, 0.5);
+            }
+        }
+
+        .question-cell.team-b {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 4px solid #FFD700;
+            color: #da251d;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
+                        inset 0 0 20px rgba(255, 215, 0, 0.3);
+            animation: glow-yellow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-yellow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
+                           inset 0 0 20px rgba(255, 215, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.9),
+                           inset 0 0 30px rgba(255, 215, 0, 0.5);
+            }
+        }
+
+        .question-cell.dead {
+            background: rgba(100, 100, 100, 0.5);
+            border: 3px solid #666;
+            color: #999;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            min-height: 50px;
+        }
+
+        .back-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Question Modal for Team */
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .question-modal.show {
+            display: flex;
+        }
+
+        .question-content {
+            background: linear-gradient(135deg, #da251d 0%, #c41e1a 100%);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .question-header {
+            font-size: 1.8rem;
+            color: #FFD700;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            color: #FFD700;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .timer-display.warning {
+            color: #ff6666;
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            color: #FFD700;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .answer-option {
+            padding: 20px;
+            font-size: 1.2rem;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .waiting-message {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #FFD700;
+            padding: 20px;
+        }
+
+        /* Round 2 Modal for Team */
+        .round2-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .round2-modal.show {
+            display: flex;
+        }
+
+        .round2-content {
+            background: linear-gradient(135deg, #da251d 0%, #c41e1a 100%);
+            border: 5px solid #FFD700;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .round2-question {
+            font-size: 1.6rem;
+            color: #FFD700;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span class="star">★</span>
+            <span id="teamTitle">TEAM</span>
+            <span class="star">★</span>
+        </h1>
+        
+        <div class="scoreboard">
+            <div class="team-score">
+                <h2>Điểm của bạn</h2>
+                <div class="score" id="teamScore">0</div>
+            </div>
+        </div>
+
+        <h2>Chọn ô câu hỏi</h2>
+        
+        <div class="team-grid">
+            <div class="question-cell" data-cell="1">1</div>
+            <div class="question-cell" data-cell="2">2</div>
+            <div class="question-cell" data-cell="3">3</div>
+            <div class="question-cell" data-cell="4">4</div>
+            <div class="question-cell" data-cell="5">5</div>
+            <div class="question-cell" data-cell="6">6</div>
+            <div class="question-cell" data-cell="7">7</div>
+            <div class="question-cell" data-cell="8">8</div>
+            <div class="question-cell" data-cell="9">9</div>
+        </div>
+
+        <div class="status" id="status">Chọn một ô để trả lời câu hỏi</div>
+
+        <button class="back-btn" onclick="backToMain()">🏠 Quay lại màn hình chính</button>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="questionModal" class="question-modal">
+        <div class="question-content">
+            <div class="question-header" id="questionHeader">Câu hỏi</div>
+            <div class="timer-display" id="timerDisplay"></div>
+            <div class="question-text" id="questionText"></div>
+            <div class="answer-options" id="answerOptions"></div>
+            <div class="waiting-message" id="waitingMessage">
+                ⏳ Đang chờ Host chấm điểm...
+            </div>
+        </div>
+    </div>
+
+    <!-- Round 2 Modal -->
+    <div id="round2Modal" class="round2-modal">
+        <div class="round2-content">
+            <h1 style="text-align: center; color: #FFD700; margin-bottom: 30px;">
+                ⭐ VÒNG 2 - CÂU HỎI MỞ ⭐
+            </h1>
+            <div class="round2-question">
+                <p style="margin-bottom: 20px;">
+                    <strong>Câu hỏi:</strong> Hồ Chí Minh từng khẳng định: <em>"Văn hóa ở trong chính trị và kinh tế"</em>. 
+                    Tuy nhiên, Người cũng quan niệm: <em>"Muốn tiến lên chủ nghĩa xã hội thì phải phát triển kinh tế và văn hóa. 
+                    Tục ngữ ta có câu: Có thực mới vực được đạo, vì thế kinh tế phải đi trước".</em>
+                </p>
+                <p style="margin-bottom: 20px;">
+                    Hãy phân tích <strong>mối quan hệ biện chứng giữa Văn hóa với Kinh tế và Chính trị</strong> theo tư tưởng Hồ Chí Minh.
+                </p>
+                <p>
+                    Tại sao Người cho rằng <strong>kinh tế, chính trị phải đi trước mở đường</strong>, nhưng văn hóa lại không được 
+                    <em>"đứng ngoài"</em> mà phải ở <em>"trong"</em> kinh tế và chính trị?
+                </p>
+            </div>
+            <div style="text-align: center; margin-top: 30px; color: #FFD700; font-size: 1.3rem;">
+                💡 Hãy thảo luận nhóm và chuẩn bị trả lời miệng!
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getDatabase, ref, set, onValue, update, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVnhRlz7goa18Y0Uwb6E3yJuTEBvxWEgY",
+            authDomain: "tu-tuong-hcm-game.firebaseapp.com",
+            databaseURL: "https://tu-tuong-hcm-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tu-tuong-hcm-game",
+            storageBucket: "tu-tuong-hcm-game.firebasestorage.app",
+            messagingSenderId: "637672671853",
+            appId: "1:637672671853:web:b6396983c7878376b1cd64",
+            measurementId: "G-WLRF1W52DH"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Questions Database
+        const questions = [
+            {
+                id: 1,
+                question: "Vào tháng 8/1943, khi còn trong nhà tù của Tưởng Giới Thạch, Hồ Chí Minh đã đưa ra quan niệm về lĩnh vực nào sau đây?",
+                answers: ["A. Kinh tế", "B. Chính trị", "C. Văn hóa", "D. Ngoại giao"],
+                correct: "C"
+            },
+            {
+                id: 2,
+                question: "Theo Hồ Chí Minh, mối quan hệ giữa văn hóa với kinh tế và chính trị được xác định như thế nào?",
+                answers: ["A. Văn hóa nằm ngoài kinh tế và chính trị", "B. Văn hóa ở trong kinh tế và chính trị", "C. Văn hóa đứng trên kinh tế và chính trị", "D. Văn hóa không liên quan đến kinh tế"],
+                correct: "B"
+            },
+            {
+                id: 3,
+                question: 'Trong quan điểm của Hồ Chí Minh về vai trò của văn hóa, Người đã khẳng định: "Văn hóa nghệ thuật cũng là một..."?',
+                answers: ["A. Trò chơi giải trí", "B. Công cụ tuyên truyền", "C. Mặt trận", "D. Hình thức kinh doanh"],
+                correct: "C"
+            },
+            {
+                id: 4,
+                question: "Hồ Chí Minh ví đạo đức cách mạng như yếu tố nào của cây và sông?",
+                answers: ["A. Cành và nhánh", "B. Hoa và lá", "C. Gốc và nguồn", "D. Thân và dòng chảy"],
+                correct: "C"
+            },
+            {
+                id: 5,
+                question: "Trong các phẩm chất đạo đức cách mạng, phẩm chất nào được Hồ Chí Minh coi là quan trọng nhất, bao trùm nhất?",
+                answers: ["A. Cần, kiệm, liêm, chính", "B. Trung với nước, hiếu với dân", "C. Yêu thương con người", "D. Tinh thần quốc tế trong sáng"],
+                correct: "B"
+            },
+            {
+                id: 6,
+                question: 'Theo Hồ Chí Minh, chữ "Liêm" trong "Cần, kiệm, liêm, chính" có nghĩa là gì?',
+                answers: ["A. Siêng năng, chăm chỉ", "B. Tiết kiệm, không hoang phí", "C. Trong sạch, không tham lam", "D. Thẳng thắn, đứng đắn"],
+                correct: "C"
+            },
+            {
+                id: 7,
+                question: '"Một tấm gương sống còn có giá trị hơn một trăm bài diễn văn tuyên truyền" thể hiện nguyên tắc xây dựng đạo đức nào của Hồ Chí Minh?',
+                answers: ["A. Nói đi đôi với làm, nêu gương về đạo đức", "B. Xây đi đôi với chống", "C. Tu dưỡng đạo đức suốt đời", "D. Phê bình và tự phê bình"],
+                correct: "A"
+            },
+            {
+                id: 8,
+                question: 'Điền vào chỗ trống câu nói nổi tiếng của Bác: "Vì lợi ích mười năm thì phải trồng cây, vì lợi ích trăm năm thì phải ..."?',
+                answers: ["A. Trồng người", "B. Xây trường học", "C. Phát triển kinh tế", "D. Giữ nước"],
+                correct: "A"
+            },
+            {
+                id: 9,
+                question: "Hồ Chí Minh xác định con người vừa là mục tiêu, vừa là ... của cách mạng?",
+                answers: ["A. Công cụ", "B. Động lực", "C. Khách thể", "D. Kết quả"],
+                correct: "B"
+            }
+        ];
+
+        // Get team from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const team = urlParams.get('team'); // 'A' or 'B'
+
+        let questionTimer = null;
+        let timeLeft = 30;
+
+        if (!team || (team !== 'A' && team !== 'B')) {
+            alert('Invalid team parameter!');
+            window.location.href = 'index_new.html';
+        }
+
+        // Set team title
+        const teamEmoji = team === 'A' ? '🔴' : '🟡';
+        const teamColor = team === 'A' ? 'ĐỎ' : 'VÀNG';
+        document.getElementById('teamTitle').textContent = `TEAM ${team} (${teamColor})`;
+
+        // Listen to game state for scores
+        const gameStateRef = ref(database, 'gameState');
+        onValue(gameStateRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('teamScore').textContent = data.scores[team];
+            }
+        });
+
+        // Listen to cells state
+        const cellsRef = ref(database, 'cells');
+        onValue(cellsRef, (snapshot) => {
+            const cells = snapshot.val();
+            if (cells) {
+                updateTeamGrid(cells);
+            }
+        });
+
+        // Listen to Round 2 status
+        const round2Ref = ref(database, 'round2Status');
+        onValue(round2Ref, (snapshot) => {
+            const status = snapshot.val();
+            if (status && status.active) {
+                document.getElementById('round2Modal').classList.add('show');
+            } else {
+                document.getElementById('round2Modal').classList.remove('show');
+            }
+        });
+
+        // Listen to cell selection status
+        const cellSelectionRef = ref(database, 'cellSelection');
+        onValue(cellSelectionRef, (snapshot) => {
+            const selection = snapshot.val();
+            const status = document.getElementById('status');
+            
+            if (selection && selection.teamRequesting === `Team ${team}`) {
+                if (selection.status === 'pending') {
+                    status.textContent = `⏳ Đang chờ Host phê duyệt ô ${selection.cellNumber}...`;
+                    status.style.color = '#FFD700';
+                    closeQuestionModal();
+                } else if (selection.status === 'approved' && selection.answeringTeam === `Team ${team}`) {
+                    // Show question only if this team is the one who will answer
+                    status.textContent = `✅ Đã được duyệt! Đang hiển thị câu hỏi...`;
+                    status.style.color = '#00ff00';
+                    showQuestionModal(selection.cellNumber);
+                } else if (selection.status === 'rejected') {
+                    status.textContent = `❌ Bị từ chối. Chọn ô khác!`;
+                    status.style.color = '#ff6666';
+                    closeQuestionModal();
+                    
+                    setTimeout(() => {
+                        status.textContent = 'Chọn một ô để trả lời câu hỏi';
+                        status.style.color = '#FFD700';
+                    }, 3000);
+                } else if (selection.status === 'approved' && selection.answeringTeam !== `Team ${team}`) {
+                    // This team requested but host gave to other team
+                    status.textContent = `⚠️ Host đã cho ${selection.answeringTeam} trả lời`;
+                    status.style.color = '#ff6666';
+                    closeQuestionModal();
+                }
+            } else if (selection && selection.answeringTeam === `Team ${team}` && selection.status === 'approved') {
+                // This team didn't request, but host gave them the question
+                status.textContent = `✅ Host cho bạn trả lời! Đang hiển thị câu hỏi...`;
+                status.style.color = '#00ff00';
+                showQuestionModal(selection.cellNumber);
+            } else if (selection && selection.teamRequesting && selection.teamRequesting !== `Team ${team}`) {
+                status.textContent = `${selection.teamRequesting} đang chọn ô...`;
+                status.style.color = '#ff6666';
+                closeQuestionModal();
+            } else {
+                status.textContent = 'Chọn một ô để trả lời câu hỏi';
+                status.style.color = '#FFD700';
+                closeQuestionModal();
+            }
+        });
+
+        function updateTeamGrid(cells) {
+            const cellElements = document.querySelectorAll('.question-cell');
+            
+            cellElements.forEach(cell => {
+                const cellNum = parseInt(cell.dataset.cell);
+                const cellData = cells[cellNum];
+                
+                // Remove all state classes first
+                cell.classList.remove('team-a', 'team-b', 'dead', 'answered');
+                
+                // Add appropriate classes based on cell owner
+                if (cellData && cellData.owner) {
+                    if (cellData.owner === 'A') {
+                        cell.classList.add('team-a', 'answered');
+                    } else if (cellData.owner === 'B') {
+                        cell.classList.add('team-b', 'answered');
+                    } else if (cellData.owner === 'dead') {
+                        cell.classList.add('dead', 'answered');
+                    }
+                }
+                // If owner is null or undefined, cell stays in default state (no classes added)
+            });
+        }
+
+        // Add click handlers to cells
+        document.querySelectorAll('.question-cell').forEach(cell => {
+            cell.addEventListener('click', async () => {
+                const cellNumber = parseInt(cell.dataset.cell);
+                await selectCell(cellNumber);
+            });
+        });
+
+        async function selectCell(cellNumber) {
+            try {
+                const cellsSnapshot = await get(cellsRef);
+                const cells = cellsSnapshot.val();
+                
+                if (!cells || !cells[cellNumber]) {
+                    alert('Ô này không hợp lệ!');
+                    return;
+                }
+                
+                if (cells[cellNumber].answered) {
+                    alert('Ô này đã được trả lời!');
+                    return;
+                }
+                
+                const selectionSnapshot = await get(cellSelectionRef);
+                const currentSelection = selectionSnapshot.val();
+                
+                if (currentSelection && currentSelection.status === 'pending') {
+                    alert('Vui lòng chờ Host phê duyệt yêu cầu hiện tại!');
+                    return;
+                }
+                
+                await set(cellSelectionRef, {
+                    teamRequesting: `Team ${team}`,
+                    cellNumber: cellNumber,
+                    status: 'pending',
+                    currentQuestion: null,
+                    answeringTeam: `Team ${team}`,
+                    timestamp: Date.now()
+                });
+            } catch (error) {
+                console.error('Error selecting cell:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại!');
+            }
+        }
+
+        function showQuestionModal(cellNumber) {
+            const question = questions[cellNumber - 1];
+            if (!question) {
+                console.error('Question not found:', cellNumber);
+                return;
+            }
+
+            document.getElementById('questionHeader').textContent = `Câu hỏi #${cellNumber}`;
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('answerOptions');
+            optionsContainer.innerHTML = '';
+            
+            question.answers.forEach(answer => {
+                const div = document.createElement('div');
+                div.className = 'answer-option';
+                div.textContent = answer;
+                optionsContainer.appendChild(div);
+            });
+            
+            // Clear previous timer
+            if (questionTimer) {
+                clearInterval(questionTimer);
+                questionTimer = null;
+            }
+            
+            // Start new timer
+            timeLeft = 30;
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.textContent = `⏱️ ${timeLeft}s`;
+            timerDisplay.classList.remove('warning');
+            
+            questionTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `⏱️ ${timeLeft}s`;
+                if (timeLeft <= 10) {
+                    timerDisplay.classList.add('warning');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(questionTimer);
+                    timerDisplay.textContent = '⏰ Hết giờ!';
+                }
+            }, 1000);
+            
+            document.getElementById('questionModal').classList.add('show');
+        }
+
+        function closeQuestionModal() {
+            if (questionTimer) {
+                clearInterval(questionTimer);
+                questionTimer = null;
+            }
+            document.getElementById('questionModal').classList.remove('show');
+        }
+
+        window.backToMain = function() {
+            if (questionTimer) clearInterval(questionTimer);
+            window.location.href = 'index_new.html';
+        };
+    </script>
+</body>
+</html>
